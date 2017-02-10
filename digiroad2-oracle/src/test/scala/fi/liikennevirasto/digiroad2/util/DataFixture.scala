@@ -731,7 +731,7 @@ object DataFixture {
       println("Start processing municipality %d".format(municipality))
 
       //Obtain all RoadLink by municipality
-      val roadLinks = roadLinkService.getRoadLinksFromVVH(municipality)
+      val roadLinks = roadLinkService.getRoadLinksFromVVHByMunicipality(municipality)
 
       println ("Total roadlink by municipality -> " + roadLinks.size)
 
@@ -796,7 +796,7 @@ object DataFixture {
       println("Inserts SingleCarriage bothDir - " + countSinglewayBothDir)
       println("Inserts Motorway... bothDir    - " + countMotorwayBothDir)
       println("Inserts Motorway... towardDir  - " + countMotorwayTowardDir)
-      println("Inserts Motorway... AgainstDir - " + countMotorwayAgainstDir)
+      println("Inserts Motorway... againstDir - " + countMotorwayAgainstDir)
       println("End processing municipality %d".format(municipality))
       println("")
     }
