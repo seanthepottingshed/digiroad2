@@ -140,6 +140,7 @@
             };
             eventbus.trigger("adjacents:added", calculatedRoads.links, calculatedRoads.adjacents);
             eventbus.trigger('adjacents:startedFloatingTransfer');
+            eventbus.trigger('linkProperties:highlightAnomalousByFloating', featuresToKeep);
           }
         });
       }
