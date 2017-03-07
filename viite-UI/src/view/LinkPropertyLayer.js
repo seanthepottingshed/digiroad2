@@ -46,18 +46,8 @@
           var floatingMinusLast = _.initial(selectedLinkProperty.getFeaturesToKeep());
           floatingMinusLast.forEach(function (fml){
             highlightFeatureByLinkId(fml.linkId);
-            
-            var floatingFeatures =[];
-                _.each(roadLayer.layer.features, function(feature){
-                  if(feature.data.linkId == fml.linkId)
-                     floatingFeatures.push(feature);
-              });
-            _.each(roadLayer.layer.features, function(feature) {
-              if(!_.isEmpty(selectedLinkProperty.getFeaturesToKeep())){
-                if(feature.geometry.bounds.containsBounds(_.first(floatingFeatures).geometry.bounds))
-                  highlightFeatureByLinkId(feature.attributes.linkId);
-              }
-            });
+            if(!applicationModel.isReadOnly())
+            highlightAnomalousFeaturesByFloating();
           });
           var anomalousFeatures = _.uniq(_.filter(selectedLinkProperty.getFeaturesToKeep(), function(ft){
               return ft.anomaly === 1;
@@ -577,7 +567,7 @@
           });
           //This should be made in the "Valinta Valmis" Trigger.
           if(!_.isEmpty(selectedFloatings)){
-            highlightAnomalousFeaturesByFloating();  
+            highlightAnomalousFeaturesByFloating();
           }
         }
       });
@@ -715,19 +705,18 @@
     };
 
     var highlightAnomalousFeaturesByFloating = function() {
-      var floatingProperty = _.map(_.filter(selectedLinkProperty.get(), function(floatingLinkProperty) {
-        return floatingLinkProperty.roadLinkType == -1;
-      }));
       var floatingFeatures =[];
       _.each(roadLayer.layer.features, function(feature){
-        if(feature.data.linkId == _.first(floatingProperty).linkId)
+        if(feature.data.roadLinkType == -1)
           floatingFeatures.push(feature);
       });
       _.each(roadLayer.layer.features, function(feature) {
-        if(!_.isEmpty(floatingFeatures)){
-          if(feature.geometry.bounds.containsBounds((_.first(floatingFeatures).geometry.bounds)))
-            selectControl.highlight(feature);
-        }
+        _.each(floatingFeatures, function(floating) {
+          if(!_.isEmpty(floatingFeatures)){
+            if(feature.geometry.bounds.containsBounds(floating.geometry.bounds))
+              selectControl.highlight(feature);
+          }
+        });
       });
     };
 
