@@ -154,5 +154,34 @@
     var openlayersPoints = _.map(points, function(point) { return new OpenLayers.Geometry.Point(point.x, point.y); });
     return new OpenLayers.Geometry.LineString(openlayersPoints);
   };
+
+  /*
+  * In OL3 is needed to rewrite the code of the intersect (OpenLayers.Geometry.intersect) for this method.
+  */
+  root.intersect = function(feature1, feature2) {
+    var intersects1, intersects2;
+    var doubleIntersect = 2;
+    var parts = [];
+
+        intersects1 = feature1.geometry.intersects(feature2.geometry);
+        if(intersects1) {
+          //feature1.attributes.intersectsWith.push("f" + j);
+          parts.push(feature1.linkId + " intersects " + feature2.linkId + "\n");
+        }
+        intersects2 = feature2.geometry.intersects(feature1.geometry);
+        if(intersects2) {
+          //feature2.attributes.intersectsWith.push("f" + i);
+          parts.push(feature2.linkId + " intersects " + feature1.linkId + "\n");
+        }
+        if(intersects1 != intersects2) {
+          parts.push(feature1.linkId + " diferent intersect " + feature2.linkId + "\n");
+        }
+    if(parts.length >= doubleIntersect) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
 })(window.GeometryUtils = window.GeometryUtils || {});
 
