@@ -136,6 +136,21 @@ class ViiteApi(val roadLinkService: RoadLinkService, val vVHClient: VVHClient,
         result.map(roadAddressLinkToApi)
       }
   }
+    get("/projects") {
+      //validation?
+      val projectD = new ProjectDao
+      projectD.getProjects.map { projects =>
+        Map("Pid" -> projects.project_Id,
+          "state" -> projects.state,
+          "name" -> projects.name,
+          "ely" -> projects.ely,
+          "created_by" -> projects.created_By,
+          "created_date" ->projects.created_date,
+          "modified_by" -> projects.modified_By,
+          "modified_date" -> projects.modified_Date
+        )
+      }
+    }
 
   get("/roadlinks/transferRoadLink") {
     val (sources, targets) = roadlinksData()
