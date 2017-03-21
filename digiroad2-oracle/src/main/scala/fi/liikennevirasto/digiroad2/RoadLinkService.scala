@@ -503,7 +503,7 @@ class RoadLinkService(val vvhClient: VVHClient, val eventbus: DigiroadEventBus, 
 
     val (historyData, currentData, complementaryData) = Await.result(fut, Duration.Inf)
 
-    withDynSession {
+    withDynTransaction {
       (enrichRoadLinksFromVVH(currentData ++ complementaryData, Seq()), historyData)
     }
   }
@@ -731,9 +731,10 @@ class RoadLinkService(val vvhClient: VVHClient, val eventbus: DigiroadEventBus, 
     * Used by RoadLinkService.fillIncompleteLinksWithPreviousLinkData and RoadLinkService.isIncomplete.
     */
   def isComplete(roadLink: RoadLink): Boolean = {
-    (roadLink.linkSource != LinkGeomSource.NormalLinkInterface && roadLink.linkSource != LinkGeomSource.ComplimentaryLinkInterface) ||
-    roadLink.functionalClass != FunctionalClass.Unknown && roadLink.linkType.value != UnknownLinkType.value
+    roadLink.linkSource != LinkGeomSource.NormalLinkInterface ||
+      roadLink.functionalClass != FunctionalClass.Unknown && roadLink.linkType.value != UnknownLinkType.value
   }
+
   def getRoadLinksAndComplementaryLinksFromVVHByMunicipality(municipality: Int): Seq[RoadLink] = {
     val fut = for {
       complementary <-getComplementaryRoadLinksFromVVHFuture(municipality)
