@@ -159,6 +159,28 @@ class ViiteApi(val roadLinkService: RoadLinkService, val vVHClient: VVHClient,
       }
     }
 
+    get("/projects") {
+      //validation?
+      val projectD = new ProjectDao
+      projectD.getProjects.map { projects =>
+        Map("Pid" -> projects.project_Id,
+          "state" -> projects.state,
+          "name" -> projects.name,
+          "ely" -> projects.ely,
+          "created_by" -> projects.created_By,
+          "created_date" -> {projects.created_date match {
+            case Some(date) =>  new SimpleDateFormat("dd.MM.YYYY").format(date)
+            case None => null
+          }},
+          "modified_by" -> projects.modified_By,
+          "modified_date" -> {projects.modified_Date match {
+            case Some(date) => new SimpleDateFormat("dd.MM.YYYY").format(date)
+            case None => null
+          }}
+        )
+      }
+    }
+
   get("/roadlinks/transferRoadLink") {
     val (sources, targets) = roadlinksData()
     val user = userProvider.getCurrentUser()
