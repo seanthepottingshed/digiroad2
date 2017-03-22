@@ -7,8 +7,9 @@ import slick.jdbc.StaticQuery.interpolation
 import slick.jdbc.{GetResult, PositionedResult}
 
 
-case class VProject(project_Id: Long, state: Integer, name: String, ely: Integer, created_By:String, created_date:Option[Date]=None,modified_By:String,modified_Date:Option[Date]=None)
-case class ProjectLink(link_Id:Long,project_Id:Long,Road_Type:Integer,discontinuity_Type:Integer, road_Number:Long, road_Part_Number:Long,start_Addr_M:Double,end_Addr_M:Double,
+case class VProject(project_Id: Long, state: Integer, name: String, ely: Integer, created_By:String, created_date:Option[Date]=None,
+                    modified_By:String,modified_Date:Option[Date]=None, info:String)
+case class ProjectLink(link_Id:Long,project_Id:Long,road_Type:Integer,discontinuity_Type:Integer, road_Number:Long, road_Part_Number:Long,start_Addr_M:Double,end_Addr_M:Double,
                        lRM_Position_Id:Long,created_By:String,modified_By:String,created_Date:Option[Date],modified_Date:Option[Date])
 
 class ProjectDao {
@@ -25,7 +26,8 @@ class ProjectDao {
       val created_date=r.nextDateOption()
       val modified_by=r.nextString()
       val modified_date=r.nextDateOption()
-      VProject(id,state,name,ely,created_By,created_date,modified_by,modified_date)
+      val info=r.nextString()
+      VProject(id,state,name,ely,created_By,created_date,modified_by,modified_date,info)
     }
   }
 
@@ -33,8 +35,8 @@ class ProjectDao {
     def apply(r: PositionedResult) = {
       val link_Id=r.nextLong()
       val project_Id=r.nextLong()
-      val discontinuity_Type=r.nextInt()
       val road_Type=r.nextInt()
+      val discontinuity_Type=r.nextInt()
       val road_Number=r.nextLong()
       val road_Part_Number=r.nextLong()
       val start_Addr_M=r.nextDouble()
@@ -62,7 +64,7 @@ class ProjectDao {
 
   def projectsQuarry: Seq[VProject] =
   {
-    sql"""SELECT id,state, name, ely,created_By,created_Date,modified_By,modified_Date FROM Project""".as[VProject].list
+    sql"""SELECT id,state, name, ely,created_By,created_Date,modified_By,modified_Date, add_info FROM Project""".as[VProject].list
   }
 
   def projectLinksQuarry(project:Long):Seq[ProjectLink]={

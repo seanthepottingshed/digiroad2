@@ -137,43 +137,51 @@ class ViiteApi(val roadLinkService: RoadLinkService, val vVHClient: VVHClient,
         result.map(roadAddressLinkToApi)
       }
   }
+    /*Lists all the projects*/
     get("/projects") {
-      //validation?
+      // user validation?
       val projectD = new ProjectDao
-      projectD.getProjects.map { projects =>
-        Map("Pid" -> projects.project_Id,
-          "state" -> projects.state,
-          "name" -> projects.name,
-          "ely" -> projects.ely,
-          "created_by" -> projects.created_By,
-          "created_date" -> {projects.created_date match {
+      projectD.getProjects.map { project =>
+        Map("Pid" -> project.project_Id,
+          "state" -> project.state,
+          "name" -> project.name,
+          "ely" -> project.ely,
+          "created_by" -> project.created_By,
+          "created_date" -> {project.created_date match {
             case Some(date) =>  new SimpleDateFormat("dd.MM.YYYY").format(date)
             case None => null
           }},
-          "modified_by" -> projects.modified_By,
-          "modified_date" -> {projects.modified_Date match {
+          "modified_by" -> project.modified_By,
+          "modified_date" -> {project.modified_Date match {
             case Some(date) => new SimpleDateFormat("dd.MM.YYYY").format(date)
             case None => null
-          }}
+          }},
+          "info" -> project.info
         )
       }
     }
-
-    get("/projects") {
-      //validation?
+ /*Lists links reserved to project*/
+    get("/projects/:pId") {
+      // user validation?
+      val pId = params("pId").toLong
       val projectD = new ProjectDao
-      projectD.getProjects.map { projects =>
-        Map("Pid" -> projects.project_Id,
-          "state" -> projects.state,
-          "name" -> projects.name,
-          "ely" -> projects.ely,
-          "created_by" -> projects.created_By,
-          "created_date" -> {projects.created_date match {
-            case Some(date) =>  new SimpleDateFormat("dd.MM.YYYY").format(date)
+      projectD.getProjectLinksByProjectID(pId).map { link =>
+        Map("Pid" -> link.project_Id,
+          "Lid" -> link.link_Id,
+          "road_type" -> link.road_Type,
+          "discontinuity_type" ->link.discontinuity_Type,
+          "road_number" -> link.road_Number,
+          "created_by" -> link.created_By,
+          "modified_by" -> link.modified_By,
+          "road_part_number" -> link.road_Part_Number,
+          "start_addr_m" -> link.start_Addr_M,
+          "end_addr_m" -> link.end_Addr_M,
+          "lrm_position_id"-> link.lRM_Position_Id,
+          "modified_date" -> {link.modified_Date match {
+            case Some(date) => new SimpleDateFormat("dd.MM.YYYY").format(date)
             case None => null
           }},
-          "modified_by" -> projects.modified_By,
-          "modified_date" -> {projects.modified_Date match {
+          "created_date"-> {link.created_Date match {
             case Some(date) => new SimpleDateFormat("dd.MM.YYYY").format(date)
             case None => null
           }}
