@@ -1,5 +1,6 @@
 package fi.liikennevirasto.digiroad2
 
+import java.text.SimpleDateFormat
 import fi.liikennevirasto.digiroad2.asset._
 import scala.util.parsing.json._
 import fi.liikennevirasto.digiroad2.authentication.RequestHeaderAuthentication
@@ -145,9 +146,15 @@ class ViiteApi(val roadLinkService: RoadLinkService, val vVHClient: VVHClient,
           "name" -> projects.name,
           "ely" -> projects.ely,
           "created_by" -> projects.created_By,
-          "created_date" ->projects.created_date,
+          "created_date" -> {projects.created_date match {
+            case Some(date) =>  new SimpleDateFormat("dd.MM.YYYY").format(date)
+            case None => null
+          }},
           "modified_by" -> projects.modified_By,
-          "modified_date" -> projects.modified_Date
+          "modified_date" -> {projects.modified_Date match {
+            case Some(date) => new SimpleDateFormat("dd.MM.YYYY").format(date)
+            case None => null
+          }}
         )
       }
     }
