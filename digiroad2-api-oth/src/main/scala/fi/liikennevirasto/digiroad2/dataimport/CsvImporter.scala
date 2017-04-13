@@ -9,6 +9,7 @@ import fi.liikennevirasto.digiroad2._
 import fi.liikennevirasto.digiroad2.masstransitstop.oracle.MassTransitStopDao
 import org.apache.commons.lang3.StringUtils.isBlank
 import fi.liikennevirasto.digiroad2.asset._
+import fi.liikennevirasto.digiroad2.masstransitstop.MassTransitStopOperations
 
 object CsvImporter {
   case class NonExistingAsset(externalId: Long, csvRow: String)
@@ -145,7 +146,8 @@ trait CsvImporter {
     val optionalAsset = massTransitStopService.getMassTransitStopByNationalId(externalId, municipalityValidation)
     optionalAsset match {
       case Some(asset) =>
-        massTransitStopService.updateExistingById(asset.id, None, properties.toSet, userProvider.getCurrentUser().username, () => _)
+        val verifiedProperties = getVerifiedProperties(properties.toSet, asset.propertyData)
+        massTransitStopService.updateExistingById(asset.id, None, verifiedProperties, userProvider.getCurrentUser().username, () => _)
       case None => throw new AssetNotFoundException(externalId)
     }
   }
@@ -162,7 +164,8 @@ trait CsvImporter {
     optionalAsset match {
       case Some(asset) =>
         val roadLinkType = asset.roadLinkType
-        if (roadTypeLimitations(roadLinkType)) Right(massTransitStopService.updateExistingById(asset.id, None, properties.toSet, userProvider.getCurrentUser().username, () => _))
+        val verifiedProperties = getVerifiedPropertiesByNationalId(properties.toSet, asset.id)
+        if (roadTypeLimitations(roadLinkType)) Right(massTransitStopService.updateExistingById(asset.id, None, verifiedProperties, userProvider.getCurrentUser().username, () => _))
         else Left(roadLinkType)
       case None => throw new AssetNotFoundException(externalId)
     }
@@ -220,4 +223,32 @@ trait CsvImporter {
       }
     }
   }
+
+  /**
+    * This method fetches Tietojen ylläpitäjä value from old asset, if value is empty in csv, to prevent clearing LiviId with unknown value.
+    * @param properties
+    * @param assetProperties
+    * @return
+    */
+  private def getVerifiedProperties(properties: Set[SimpleProperty], assetProperties: Seq[AbstractProperty]): Set[SimpleProperty] = {
+    val administratorInfoFromProperties = properties.find(_.publicId == MassTransitStopOperations.AdministratorInfoPublicId)
+
+    administratorInfoFromProperties.flatMap(_.values.headOption.map(_.propertyValue)) match {
+      case Some(value) => properties
+      case None =>
+        val administratorInfoFromAsset = assetProperties.find(_.publicId == MassTransitStopOperations.AdministratorInfoPublicId).flatMap(prop => prop.values.headOption).get.propertyValue
+        val oldAdministratorInfoProperty = Seq(SimpleProperty(MassTransitStopOperations.AdministratorInfoPublicId, Seq(PropertyValue(administratorInfoFromAsset))))
+        properties ++ oldAdministratorInfoProperty
+    }
+  }
+
+  private def getVerifiedPropertiesByNationalId(properties: Set[SimpleProperty], externalId: Long): Set[SimpleProperty] = {
+    val optionalAsset = massTransitStopService.getMassTransitStopByNationalId(externalId, municipalityValidation)
+    optionalAsset match {
+      case Some(asset) =>
+        getVerifiedProperties(properties.toSet, asset.propertyData)
+      case None => throw new AssetNotFoundException(externalId)
+    }
+  }
+
 }
