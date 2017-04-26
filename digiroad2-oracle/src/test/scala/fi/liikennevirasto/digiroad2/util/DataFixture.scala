@@ -481,7 +481,7 @@ object DataFixture {
     val busStops = trBusStops.flatMap{
       trStop =>
         try {
-          val stopPointOption = geometryTransform.addressToCoords(trStop.roadAddress.road, trStop.roadAddress.roadPart, trStop.roadAddress.track, trStop.roadAddress.mValue)
+          val stopPointOption = withDynSession{ geometryTransform.addressToCoords(trStop.roadAddress.road, trStop.roadAddress.roadPart, trStop.roadAddress.track, trStop.roadAddress.mValue) }
 
           stopPointOption match {
             case Some(stopPoint) =>
@@ -503,7 +503,7 @@ object DataFixture {
                 Some(NearestBusStops(trStop, peristedStop, distance))
               }
             case _ => {
-              println("VKM can't resolve the coordenates of the TR bus stop address with livi Id "+ trStop.liviId)
+              println("Can't resolve the coordenates of the TR bus stop address with livi Id "+ trStop.liviId)
               None
             }
           }
