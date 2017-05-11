@@ -10,12 +10,12 @@ import fi.liikennevirasto.digiroad2.masstransitstop.oracle.{Queries, Sequences}
 import fi.liikennevirasto.digiroad2.oracle.{MassQuery, OracleDatabase}
 import fi.liikennevirasto.digiroad2.util.Track
 import fi.liikennevirasto.digiroad2.{GeometryUtils, Point}
-import fi.liikennevirasto.viite.{RoadType, ReservedRoadPart}
+import fi.liikennevirasto.viite.{ReservedRoadPart, RoadType}
 import fi.liikennevirasto.viite.dao.CalibrationCode._
-import fi.liikennevirasto.viite.model.{Anomaly, RoadAddressLink}
+import fi.liikennevirasto.viite.model.{Anomaly}
 import fi.liikennevirasto.viite.process.RoadAddressFiller.LRMValueAdjustment
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.format.{ISODateTimeFormat}
 import org.slf4j.LoggerFactory
 import slick.driver.JdbcDriver.backend.Database.dynamicSession
 import slick.jdbc.StaticQuery.interpolation
@@ -892,19 +892,21 @@ object RoadAddressDAO {
     Q.queryNA[String](query).firstOption
   }
 
-  def getRoadPartInfo(roadNumber:Long, roadPart:Long): Option[(Long,Long,Double,Long)] =
+  def getRoadPartInfo(projDate:String, roadNumber:Long, roadPart:Long): Option[(Long,Long,Double,Long)] =
   {
     val query = s"""SELECT r.id, l.link_id, r.end_addr_M, r.discontinuity
                 FROM road_address r
              INNER JOIN lrm_position l
              ON r.lrm_position_id =  l.id
-             INNER JOIN (Select  MAX(start_addr_m) as lol FROM road_address rm WHERE road_number=$roadNumber AND road_part_number=$roadPart AND
+             INNER JOIN (Select  MAX(start_addr_m) as max_start FROM road_address rm WHERE road_number=$roadNumber AND road_part_number=$roadPart AND
              (rm.valid_from is null or rm.valid_from <= sysdate) AND (rm.valid_to is null or rm.valid_to >= sysdate) AND track_code in (0,1))  ra
-             on r.START_ADDR_M=ra.lol
+             on r.START_ADDR_M=ra.max_start
              WHERE r.road_number=$roadNumber AND r.road_part_number=$roadPart AND
-             (r.valid_from is null or r.valid_from <= sysdate) AND (r.valid_to is null or r.valid_to >= sysdate) AND track_code in (0,1)"""
+             (r.valid_from is null or r.valid_from <= sysdate) AND
+             (r.valid_to is null or r.valid_to >= sysdate) AND
+             (r.start_date < '$projDate') AND track_code in (0,1)"""
      Q.queryNA[(Long,Long,Double,Long)](query).firstOption
-    }
+  }
 
 
 }

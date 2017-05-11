@@ -63,7 +63,7 @@
         '<label class="control-label"></label>' +
         addSmallLabel('TIE') + addSmallLabel('AOSA') + addSmallLabel('LOSA') +
         '</div>' +
-        '<div class="form-group">' +
+        '<div class="form-group input-required-varaa">' +
         '<label class="control-label">Tieosat</label>' +
         addSmallInputNumber('tie') + addSmallInputNumber('aosa') + addSmallInputNumber('losa') +  addReserveButton() +
         '</div>' +
@@ -101,7 +101,7 @@
         '<label class="control-label"></label>' +
         addSmallLabel('TIE')+ addSmallLabel('AOSA')+ addSmallLabel('LOSA')+
         '</div>'+
-        '<div class="form-group">' +
+        '<div class="form-group input-required-varaa">' +
         '<label class="control-label">Tieosat</label>' +
         addSmallInputNumber('tie')+ addSmallInputNumber('aosa')+ addSmallInputNumber('losa')+ addReserveButton() +
         '</div>'+
@@ -145,8 +145,18 @@
       }
     };
 
+    var enableVaraaButton = function(rootElement) {
+      if (rootElement.find('#alkupvm').val()!=='' &&
+        rootElement.find('#tie').val()!=='' && rootElement.find('#aosa').val()!=='' && rootElement.find('#losa').val()!==''){
+        return false;
+      }
+      else {
+        return true;
+      }
+    };
+
     var addReserveButton = function() {
-        return '<button class="btn btn-reserve">Varaa</button>';
+        return '<button class="btn btn-reserve" disabled>Varaa</button>';
     };
 
     var bindEvents = function() {
@@ -251,6 +261,11 @@
 
       rootElement.on('change', '.input-required', function() {
         rootElement.find('.project-form button.save').attr('disabled', formIsValid(rootElement));
+        rootElement.find('#roadAddressProject button.btn-reserve').attr('disabled', enableVaraaButton(rootElement));
+      });
+
+      rootElement.on('change', '.input-required-varaa', function() {
+        rootElement.find('#roadAddressProject button.btn-reserve').attr('disabled', enableVaraaButton(rootElement));
       });
 
     };

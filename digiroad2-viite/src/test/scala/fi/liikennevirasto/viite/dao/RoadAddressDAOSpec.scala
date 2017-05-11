@@ -2,7 +2,6 @@ package fi.liikennevirasto.viite.dao
 
 import com.github.tototoshi.slick.MySQLJodaSupport._
 import fi.liikennevirasto.digiroad2.asset.{BoundingRectangle, SideCode}
-import fi.liikennevirasto.digiroad2.masstransitstop.oracle.Sequences
 import fi.liikennevirasto.digiroad2.oracle.OracleDatabase
 import fi.liikennevirasto.digiroad2.util.Track
 import fi.liikennevirasto.digiroad2.{DigiroadEventBus, Point, RoadLinkService}
@@ -15,7 +14,6 @@ import slick.driver.JdbcDriver.backend.Database
 import slick.driver.JdbcDriver.backend.Database.dynamicSession
 import slick.jdbc.StaticQuery.interpolation
 import fi.liikennevirasto.digiroad2.masstransitstop.oracle.Sequences
-import slick.jdbc.{StaticQuery => Q}
 
 
 /**
@@ -193,13 +191,19 @@ test("create road address project") {
 
   test("get roadpart info") {
     runWithRollback {
-      val reserveResult= RoadAddressDAO.getRoadPartInfo(5,203)
+      val reserveResult= RoadAddressDAO.getRoadPartInfo("27.10.10",5,203)
       val expectedLink = reserveResult==Some((242,5172706,5907.0,5))
       expectedLink should be (true)
     }
-
   }
 
+
+  test("not get roadpart info with newer road addresses") {
+    runWithRollback {
+      val reserveResult = RoadAddressDAO.getRoadPartInfo("92.10.08",5,205)
+      reserveResult should be (None)
+    }
+  }
 
 
 }

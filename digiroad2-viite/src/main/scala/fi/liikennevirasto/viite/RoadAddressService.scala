@@ -609,15 +609,15 @@ class RoadAddressService(roadLinkService: RoadLinkService, eventbus: DigiroadEve
     }
   }
 
-  def checkReservability(roadNumber: Long, startPart: Long, endPart: Long): Either[String, Seq[ReservedRoadPart]] = {
+  def checkReservability(projDate:String, roadNumber:Long, startPart:Long, endPart:Long):Either[String,Seq[ReservedRoadPart]] = {
     withDynTransaction {
       var listOfAddressParts: ListBuffer[ReservedRoadPart] = ListBuffer.empty
       for (part <- startPart to endPart) {
-        val reserved = RoadAddressDAO.roadPartReservedByProject(roadNumber, part)
+        val reserved = RoadAddressDAO.roadPartReservedByProject(roadNumber,part)
         reserved match {
           case Some(projectname) => return Left(s"TIE $roadNumber OSA $part on jo varattuna projektissa $projectname, tarkista tiedot")
           case None => {
-            val (roadpartID, linkID, length, discontinuity, ely, foundAddress) = getAddressPartinfo(roadNumber, part)
+            val (roadpartID, linkID, length, discontinuity, ely, foundAddress) = getAddressPartinfo(projDate,roadNumber,part)
             if (foundAddress) // db search failed or we couldnt get info from VVH
               listOfAddressParts += ReservedRoadPart(roadpartID, roadNumber, part, length, Discontinuity.apply(discontinuity), ely)
           }
@@ -627,16 +627,16 @@ class RoadAddressService(roadLinkService: RoadLinkService, eventbus: DigiroadEve
     }
   }
 
-  private def getAddressPartinfo(roadnumber: Long, roadpart: Long): (Long, Long, Double, String, Long, Boolean) = {
-    RoadAddressDAO.getRoadPartInfo(roadnumber, roadpart) match {
-      case Some((roadpartid, linkid, lenght, discontinuity)) => {
+  private def getAddressPartinfo(projDate:String,roadNumber:Long,roadPart:Long):(Long,Long,Double,String,Long,Boolean) = {
+    RoadAddressDAO.getRoadPartInfo(projDate,roadNumber, roadPart) match {
+      case Some((roadPartId, linkId, lenght, discontinuity)) => {
         val enrichment = false
-        val roadLink = roadLinkService.getRoadLinksByLinkIdsFromVVH(Set(linkid), enrichment)
+        val roadLink = roadLinkService.getRoadLinksByLinkIdsFromVVH(Set(linkId), enrichment)
         val ely: Long = MunicipalityDAO.getMunicipalityRoadMaintainers.getOrElse(roadLink.head.municipalityCode, 0)
         if (ely == 0) {
           return (0, 0, 0, "", 0, false)
         }
-        return (roadpartid, linkid, lenght, Discontinuity.apply(discontinuity.toInt).description, ely, true)
+        return (roadPartId, linkId, lenght, Discontinuity.apply(discontinuity.toInt).description, ely, true)
       }
       case None => {
         return (0, 0, 0, "", 0, false)
