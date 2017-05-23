@@ -2,6 +2,7 @@ lock '3.1.0'
 set :application, 'digiroad2'
 set :repo_url, 'https://github.com/finnishtransportagency/digiroad2.git'
 set :branch, ENV['REVISION'] || ENV['BRANCH_NAME'] || 'master'
+set :grunt_deploy_task, ENV['GRUNT_DEPLOY_TASK'] || 'deploy'
 set :deploy_to, "/home/web/digiroad2"
 set :pty, true
 set :log_level, :info
@@ -19,7 +20,7 @@ namespace :deploy do
   task :prepare_release do
     on roles(:all) do |host|
       execute "tmux kill-server || true"
-      execute "cd #{release_path} && npm install && bower install && grunt deploy"
+      execute "cd #{release_path} && npm install && bower install && grunt #{grunt_deploy_task}"
       execute "cd #{deploy_path} && mkdir #{release_path}/digiroad2-oracle/lib && cp oracle/* #{release_path}/digiroad2-oracle/lib/."
       execute "mkdir -p #{release_path}/digiroad2-oracle/conf/#{fetch(:stage)}"
       execute "cd #{deploy_path} && cp bonecp.properties #{release_path}/digiroad2-oracle/conf/#{fetch(:stage)}/."

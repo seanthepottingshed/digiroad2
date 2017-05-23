@@ -7,6 +7,9 @@ module.exports = function(grunt) {
       development: {
         NODE_ENV: 'DEVELOPMENT'
       },
+      staging: {
+        NODE_ENV: 'STAGING'
+      },
       production: {
         NODE_ENV: 'PRODUCTION'
       }
@@ -308,6 +311,8 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['jshint', 'env:production', 'exec:prepare_openlayers', 'exec:oth_build_openlayers', 'exec:viite_build_openlayers', 'configureProxies:oth', 'preprocess:production', 'connect:oth', 'mocha:unit', 'mocha:integration', 'clean', 'less:production', 'less:viiteprod', 'concat', 'uglify', 'cachebreaker']);
 
   grunt.registerTask('deploy', ['clean', 'env:production', 'exec:prepare_openlayers', 'exec:oth_build_openlayers', 'exec:viite_build_openlayers', 'preprocess:production', 'less:production', 'less:viiteprod', 'concat', 'uglify', 'cachebreaker', 'save_deploy_info']);
+
+  grunt.registerTask('deploy-staging', ['clean', 'env:staging', 'exec:prepare_openlayers', 'exec:oth_build_openlayers', 'exec:viite_build_openlayers', 'preprocess:production', 'less:production', 'less:viiteprod', 'concat', 'uglify', 'cachebreaker', 'save_deploy_info']);
 
   grunt.registerTask('integration-test', ['jshint', 'env:development', 'configureProxies:oth', 'preprocess:development', 'connect:oth', 'mocha:integration']);
 
